@@ -1,0 +1,457 @@
+{
+  "forms": [
+    {
+      "id": "scratchWebsite",
+      "name": "Scratch Website",
+      "description": "To create a new website which includes Web, DB, SSRS",
+      "fields": [
+        {
+          "id": "artifactNameVersion",
+          "label": "Artifact Name and Version",
+          "type": "text",
+          "required": true,
+          "helpText": "Build Pipeline Name for Continuous Deployment"
+        },
+        {
+          "id": "urlType",
+          "label": "Website Type",
+          "type": "radio",
+          "required": true,
+          "options": [
+            {"value": "customer-facing", "label": "Customer Facing"},
+            {"value": "internal", "label": "Internal System"}
+          ]
+        },
+        {
+          "id": "websiteUrl",
+          "label": "URL of new website",
+          "type": "text",
+          "required": true,
+          "validations": [
+            "required",
+            {
+              "type": "custom",
+              "validator": "validateDomainByType",
+              "params": {"urlTypeField": "urlType"}
+            }
+          ],
+          "helpText": "Format: xxxxx-yyyyy.domain where xxxxx = customer name, yyyyy = environment (LAB, DEV, QA, etc.)",
+          "dependencies": ["urlType"]
+        },
+        {
+          "id": "moduleSequence",
+          "label": "Sequence of modules for Deploy.csv",
+          "type": "textarea",
+          "required": false,
+          "conditional": "onlyForPRA",
+          "helpText": "Required only for PRA and Sign-Off"
+        },
+        {
+          "id": "serverName",
+          "label": "Server name",
+          "type": "text",
+          "required": false,
+          "placeholder": "e.g., USQA-WEB101"
+        },
+        {
+          "id": "separateWorkflow",
+          "label": "Separate Workflow Required",
+          "type": "checkbox",
+          "required": false
+        },
+        {
+          "id": "leadToolsUrl",
+          "label": "LeadToolsURL",
+          "type": "text",
+          "required": false,
+          "helpText": "Configure LeadTools with scratch build"
+        }
+      ]
+    },
+    {
+      "id": "copySite",
+      "name": "Copy Site",
+      "description": "Copy from existing source application to new website",
+      "fields": [
+        {
+          "id": "businessJustification",
+          "label": "Business justification with approval",
+          "type": "textarea",
+          "required": true,
+          "helpText": "Approvers: Sustenance: Megha, SE: Syed, Essentials: Sanat, MW Cloud: Sanat"
+        },
+        {
+          "id": "sourceArtifact",
+          "label": "Latest artifact on source site",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "newSiteUrl",
+          "label": "Complete URL for New Site",
+          "type": "text",
+          "required": true,
+          "validations": ["required", "url"]
+        },
+        {
+          "id": "sourceSiteUrl",
+          "label": "Complete URL of Source Site",
+          "type": "text",
+          "required": true,
+          "validations": [
+            "required", 
+            "url",
+            {
+              "type": "custom",
+              "validator": "validateMWVersion",
+              "params": {"minVersion": "12.2.0"}
+            }
+          ]
+        },
+        {
+          "id": "serverDetails",
+          "label": "Server Detail for new site",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "customerApproval",
+          "label": "Customer approval obtained",
+          "type": "checkbox",
+          "required": true,
+          "helpText": "Required for PROD to SIT/UAT copies"
+        }
+      ]
+    },
+    {
+      "id": "buildPipelinePatch",
+      "name": "Build Pipeline - Patch MW Modules",
+      "description": "Generate Custom MW Product Modules from Product Releases",
+      "fields": [
+        {
+          "id": "sourceBranch",
+          "label": "Source Branch Name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "newBranch",
+          "label": "New Branch Name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "pipelineName",
+          "label": "Build Pipeline Name",
+          "type": "text",
+          "required": true,
+          "validations": [
+            "required",
+            {
+              "type": "custom",
+              "validator": "validatePipelineNaming"
+            }
+          ],
+          "helpText": "All lowercase matching TFS path naming convention"
+        },
+        {
+          "id": "tfsAttachment",
+          "label": "TFS and Module XML",
+          "type": "file",
+          "required": true,
+          "helpText": "To be attached in ticket"
+        },
+        {
+          "id": "tfsPath",
+          "label": "TFS/Code Repos path",
+          "type": "text",
+          "required": true,
+          "validations": ["required", "url"]
+        },
+        {
+          "id": "version",
+          "label": "Version",
+          "type": "text",
+          "required": true,
+          "helpText": "Masterworks Custom MODULE folder name"
+        }
+      ]
+    },
+    {
+      "id": "buildPipelineCustom",
+      "name": "BuildPipeline - Custom Module",
+      "description": "Generate Custom module Artifact",
+      "fields": [
+        {
+          "id": "pipelineName",
+          "label": "Build Pipeline Name",
+          "type": "text",
+          "required": true,
+          "validations": [
+            "required",
+            {
+              "type": "custom",
+              "validator": "validatePipelineNaming"
+            }
+          ],
+          "helpText": "All lowercase matching TFS path naming convention"
+        },
+        {
+          "id": "tfsAttachment",
+          "label": "TFS and Module XML",
+          "type": "file",
+          "required": true,
+          "helpText": "To be attached in ticket"
+        },
+        {
+          "id": "tfsPath",
+          "label": "TFS/Code Repos path",
+          "type": "text",
+          "required": true,
+          "validations": ["required", "url"]
+        },
+        {
+          "id": "projectName",
+          "label": "Project Name",
+          "type": "text",
+          "required": true,
+          "placeholder": "e.g., Production_NJTA"
+        },
+        {
+          "id": "baseMWVersion",
+          "label": "base.MWVersion",
+          "type": "text",
+          "required": false,
+          "placeholder": "e.g., 22.2.0_FL OR 22.2.0_NDOT_FL"
+        },
+        {
+          "id": "ciWatchers",
+          "label": "pipeline.ciwatchers",
+          "type": "email",
+          "required": false,
+          "multiple": true,
+          "helpText": "Comma separated emails for notifications"
+        }
+      ]
+    },
+    {
+      "id": "releasePipeline",
+      "name": "Release Pipeline",
+      "description": "Deploy latest artifact to masterworks application",
+      "fields": [
+        {
+          "id": "websiteUrl",
+          "label": "URL of the website",
+          "type": "text",
+          "required": true,
+          "validations": ["required", "url"]
+        },
+        {
+          "id": "artifactName",
+          "label": "Artifact for integration",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "projectName",
+          "label": "Project name",
+          "type": "text",
+          "required": true,
+          "placeholder": "e.g., Production_NJTA"
+        },
+        {
+          "id": "serverDetails",
+          "label": "Server Name/IP",
+          "type": "text",
+          "required": true,
+          "placeholder": "e.g., USQA-WEB101"
+        },
+        {
+          "id": "ciWatchers",
+          "label": "pipeline.ciwatchers",
+          "type": "email",
+          "required": true,
+          "multiple": true
+        },
+        {
+          "id": "approvers",
+          "label": "Release pipeline approvers",
+          "type": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "microserviceRequest",
+      "name": "Microservice API Request",
+      "description": "New API microservice environment creation",
+      "fields": [
+        {
+          "id": "environmentName",
+          "label": "Environment Name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "repositoryBranch",
+          "label": "Repository link/branch name",
+          "type": "select",
+          "required": true,
+          "options": [
+            "main-prod",
+            "release-np",
+            "develop-all"
+          ]
+        },
+        {
+          "id": "dbCreationType",
+          "label": "DB creation type",
+          "type": "radio",
+          "required": true,
+          "options": [
+            {"value": "manual", "label": "Manual"},
+            {"value": "code", "label": "From Code"}
+          ]
+        },
+        {
+          "id": "awsServices",
+          "label": "Required AWS Services",
+          "type": "checklist",
+          "required": true,
+          "options": [
+            "S3", "RDS", "Lambda", "SQS", "SNS", "DynamoDB"
+          ]
+        },
+        {
+          "id": "databaseType",
+          "label": "EC2 SQL Server or RDS",
+          "type": "radio",
+          "required": true,
+          "options": [
+            {"value": "ec2", "label": "EC2 SQL Server"},
+            {"value": "rds", "label": "RDS"}
+          ]
+        },
+        {
+          "id": "permissions",
+          "label": "Permissions/network connectivity",
+          "type": "textarea",
+          "required": true
+        },
+        {
+          "id": "apiGatewayRepo",
+          "label": "APIGateway/Authorizer Repo",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "podConfig",
+          "label": "Pod Configurations",
+          "type": "text",
+          "required": true,
+          "helpText": "CPU/Mem per pod, Min & Max pods"
+        },
+        {
+          "id": "appSettings",
+          "label": "Appsettings.json configurations",
+          "type": "textarea",
+          "required": true
+        },
+        {
+          "id": "syncfusionLicense",
+          "label": "Syncfusion license required",
+          "type": "text",
+          "required": false,
+          "helpText": "Specify version if needed"
+        },
+        {
+          "id": "publicAccess",
+          "label": "Publicly accessible URL",
+          "type": "checkbox",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "staticSiteRequest",
+      "name": "UI - Static site request",
+      "description": "Frontend static site for new microservice environment",
+      "fields": [
+        {
+          "id": "environmentName",
+          "label": "Environment Name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "repositoryBranch",
+          "label": "Repository link/branch name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "envChanges",
+          "label": ".env checkin and package.json changes",
+          "type": "checkbox",
+          "required": true
+        },
+        {
+          "id": "syncfusionLicense",
+          "label": "Syncfusion license required",
+          "type": "text",
+          "required": false,
+          "helpText": "Specify version if needed"
+        },
+        {
+          "id": "publicAccess",
+          "label": "Publicly accessible URL",
+          "type": "checkbox",
+          "required": true
+        },
+        {
+          "id": "adminPortal",
+          "label": "Admin portal exists",
+          "type": "checkbox",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "validationRegistry": {
+    "required": {
+      "message": "This field is required"
+    },
+    "url": {
+      "pattern": "^(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([\\/\\w \\.-]*)*\\/?$",
+      "message": "Invalid URL format"
+    },
+    "validateDomainByType": {
+      "handler": "domainValidator",
+      "params": {
+        "patterns": {
+          "customer-facing": "\\.masterworkslive\\.com$",
+          "internal": "\\.aurigo\\.net$"
+        }
+      }
+    },
+    "validateMWVersion": {
+      "handler": "mwVersionValidator",
+      "params": {
+        "minVersion": "12.2.0"
+      }
+    },
+    "validatePipelineNaming": {
+      "handler": "pipelineNamingValidator",
+      "params": {
+        "pattern": "^mwpr_[a-z0-9]+_[a-z0-9]+$"
+      }
+    }
+  },
+  "formMetadata": {
+    "version": "1.0",
+    "lastUpdated": "2023-10-15",
+    "source": "DevOpsTemplate.xlsx",
+    "note": "A separate ticket is required for each request"
+  }
+}
+
